@@ -143,12 +143,12 @@ export function HeroSectionArc() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col w-full">
       {/* Main Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center">
-        <section className="w-full flex flex-col items-center justify-center py-16 md:py-28 relative overflow-visible">
+      <main className="flex-1 flex flex-col items-center justify-center w-full">
+        <section className="w-full flex flex-col items-center justify-center py-8 md:py-28 relative overflow-visible px-2 sm:px-4">
           {/* Animated Spotlight Background */}
-          <div className="pointer-events-none select-none absolute left-1/2 top-0 -translate-x-1/2 z-0 w-[900px] h-[400px]" style={{filter: 'blur(8px)', opacity: 0.7}}>
+          <div className="pointer-events-none select-none absolute left-1/2 top-0 -translate-x-1/2 z-0 w-full max-w-[900px] h-[200px] sm:h-[400px]" style={{filter: 'blur(8px)', opacity: 0.7}}>
             <div className="w-full h-full animate-spotlight-move" style={{
               background: 'radial-gradient(circle at 60% 40%, rgba(80,180,255,0.18) 0%, rgba(80,180,255,0.08) 60%, transparent 100%)',
               width: '100%',
@@ -157,7 +157,7 @@ export function HeroSectionArc() {
           </div>
 
           {/* Arc Images (animated) */}
-          <div className="pointer-events-none select-none absolute left-1/2 -translate-x-1/2 -top-32 z-10" style={{ width: 800, height: 220 }}>
+          <div className="pointer-events-none select-none absolute left-1/2 -translate-x-1/2 -top-20 sm:-top-32 z-10 w-full max-w-[800px] h-[120px] sm:h-[220px]">
             {images.map((src, i) => {
               const angle = arcAngles[i];
               const { x, y } = getArcPositionByAngle(angle);
@@ -182,21 +182,21 @@ export function HeroSectionArc() {
           </div>
 
           {/* Centered Content */}
-          <div className="relative z-20 flex flex-col items-center justify-center mt-[120px] mb-8 px-4">
-            <h1 className="text-4xl md:text-5xl font-serif font-semibold text-center mb-4 leading-tight text-foreground">
+          <div className="relative z-20 flex flex-col items-center justify-center mt-[80px] sm:mt-[120px] mb-6 px-2 w-full">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-semibold text-center mb-3 sm:mb-4 leading-tight text-foreground w-full">
               Find Study Buddies, Swap Skills,<br />and Ace Assignments
             </h1>
-            <p className="text-muted-foreground text-center max-w-xl mb-6 text-lg font-light">
+            <p className="text-muted-foreground text-center max-w-xl mb-4 sm:mb-6 text-base sm:text-lg font-light w-full">
               KindCampus connects students and faculty for peer learning, team-ups, and instant feedback on practical tasks—all in one place.
             </p>
-            <div className="flex gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 w-full justify-center items-center">
               <Link href="/kindcollab">
-                <button className="bg-foreground text-background px-7 py-3 rounded-full font-medium text-lg shadow hover:bg-primary transition flex items-center gap-2">
+                <button className="w-full sm:w-auto bg-foreground text-background px-7 py-3 rounded-full font-medium text-lg shadow hover:bg-primary transition flex items-center gap-2">
                   Go to Collab
                 </button>
               </Link>
               <Link href="/kindtasks">
-                <button className="bg-foreground text-background px-7 py-3 rounded-full font-medium text-lg shadow hover:bg-primary transition flex items-center gap-2">
+                <button className="w-full sm:w-auto bg-foreground text-background px-7 py-3 rounded-full font-medium text-lg shadow hover:bg-primary transition flex items-center gap-2">
                   Go to Tasks
                 </button>
               </Link>
@@ -204,12 +204,12 @@ export function HeroSectionArc() {
           </div>
 
           {/* Features */}
-          <div className="relative z-20 flex flex-col md:flex-row gap-8 w-full max-w-3xl justify-center mt-2 pb-4">
-            <div className="flex-1 text-center">
+          <div className="relative z-20 flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-3xl justify-center mt-2 pb-4 px-2">
+            <div className="flex-1 text-center mb-2 md:mb-0">
               <div className="font-semibold mb-1 text-foreground">Real Connections</div>
               <div className="text-muted-foreground text-sm">Meet new friends and teammates instantly for collaborative learning.</div>
             </div>
-            <div className="flex-1 text-center">
+            <div className="flex-1 text-center mb-2 md:mb-0">
               <div className="font-semibold mb-1 text-foreground">Instant Feedback</div>
               <div className="text-muted-foreground text-sm">Get AI-powered hints and grading for assignments and projects.</div>
             </div>
@@ -220,8 +220,16 @@ export function HeroSectionArc() {
           </div>
 
           {/* Glowing Feature Grid */}
-          <div className="relative z-20 w-full max-w-6xl mx-auto mt-8 mb-4 px-2">
+          <div className="relative z-20 w-full max-w-6xl mx-auto mt-8 mb-4 px-0 sm:px-2">
             <GlowingEffectDemo />
+          </div>
+
+          {/* College Email Recommendation */}
+          <div className="flex flex-col items-center gap-2 mt-4">
+            <SignedOut>
+              <SignUpButton />
+              <p className="mt-2 text-xs text-muted-foreground text-center">We recommend using your college email address for account creation.</p>
+            </SignedOut>
           </div>
         </section>
       </main>

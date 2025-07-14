@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +70,15 @@ export default function KindCollabPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [mockCardsState, setMockCardsState] = useState<any[]>(mockCards);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Update form state to support dynamic fields
   const [form, setForm] = useState({
@@ -274,8 +283,8 @@ export default function KindCollabPage() {
   return (
     <div className="min-h-screen bg-background py-10 px-2 md:px-8 transition-colors flex flex-col min-h-screen">
       {/* Search & Filter Bar */}
-      <div className="max-w-6xl mx-auto mb-8">
-        <div className="flex flex-col md:flex-row md:items-center gap-4 bg-card rounded-2xl shadow p-4 border border-border">
+      <div className={`max-w-6xl mx-auto mb-8 sticky z-30 transition-all duration-300 ${scrolled ? 'top-16' : 'top-6'}`} style={{paddingTop: scrolled ? '0.5rem' : '0'}}>
+        <div className="flex flex-col md:flex-row md:items-center gap-4 bg-white/70 dark:bg-background/70 rounded-2xl shadow-lg p-4 border border-border backdrop-blur-md">
           <div className="flex items-center flex-1 gap-2 bg-background rounded-xl px-3 py-2 border border-input">
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
@@ -396,13 +405,15 @@ export default function KindCollabPage() {
       )}
 
       {/* Create Post Dialog (unchanged, but visually fits new design) */}
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-          <Button className="mt-4 md:mt-0 fixed bottom-20 right-4 md:right-10 z-50">
-            <Plus className="h-6 w-6" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogTrigger asChild>
+          <div className="fixed left-1/2 bottom-8 z-50 -translate-x-1/2 flex justify-center w-full pointer-events-none">
+            <Button className="pointer-events-auto rounded-full shadow-lg bg-primary text-primary-foreground w-16 h-16 flex items-center justify-center text-3xl" size="icon">
+              <Plus className="h-8 w-8" />
+            </Button>
+          </div>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
             <DialogTitle>Create New Collab Card</DialogTitle>
                 <DialogDescription>

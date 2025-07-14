@@ -49,12 +49,12 @@ function ThemeToggle() {
 
 export function Navbar() {
   const { isSignedIn } = useUser();
+  const [menuOpen, setMenuOpen] = React.useState(false);
   return (
-    <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full flex justify-center pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-6xl bg-white/80 rounded-xl px-6 py-3 flex items-center justify-between shadow-2xl border border-zinc-200/60 backdrop-blur-lg">
+    <nav className="fixed top-0 left-0 z-50 w-full bg-white/80 dark:bg-background/80 border-b border-zinc-200/60 backdrop-blur-lg">
+      <div className="w-full max-w-6xl mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-3">
         {/* Logo and Brand */}
         <div className="flex items-center space-x-3">
-          {/* Placeholder purple logo SVG */}
           <span className="inline-block">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="2" y="2" width="12" height="12" fill="#a78bfa"/>
@@ -64,23 +64,29 @@ export function Navbar() {
               <rect x="7" y="7" width="18" height="18" fill="white" fillOpacity="0.1"/>
             </svg>
           </span>
-          <span className="text-2xl font-extrabold text-black tracking-tight">KindCampus</span>
+          <span className="text-2xl font-extrabold text-black dark:text-white tracking-tight">KindCampus</span>
         </div>
+        {/* Hamburger for mobile */}
+        <button className="md:hidden ml-auto p-2" aria-label="Open menu" onClick={() => setMenuOpen(!menuOpen)}>
+          <span className="block w-6 h-0.5 bg-black dark:bg-white mb-1"></span>
+          <span className="block w-6 h-0.5 bg-black dark:bg-white mb-1"></span>
+          <span className="block w-6 h-0.5 bg-black dark:bg-white"></span>
+        </button>
         {/* Center Menu */}
-        <div className="flex-1 flex justify-center">
+        <div className="hidden md:flex flex-1 justify-center">
           <div className="flex space-x-10">
-            <Link href="/" className="text-black font-medium hover:underline transition">Home</Link>
-            <Link href="/kindcollab" className="text-black font-medium hover:underline transition">KindCollab</Link>
-            <Link href="/kindtasks" className="text-black font-medium hover:underline transition">KindTasks</Link>
+            <Link href="/" className="text-black dark:text-white font-medium hover:underline transition">Home</Link>
+            <Link href="/kindcollab" className="text-black dark:text-white font-medium hover:underline transition">KindCollab</Link>
+            <Link href="/kindtasks" className="text-black dark:text-white font-medium hover:underline transition">KindTasks</Link>
           </div>
         </div>
         {/* Right Side Buttons */}
-        <div className="flex items-center space-x-3">
+        <div className="hidden md:flex items-center space-x-3">
           {isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
             <SignInButton mode="modal">
-              <Button className="text-black font-medium hover:underline transition" variant="ghost" size="sm">
+              <Button className="text-black dark:text-white font-medium hover:underline transition" variant="ghost" size="sm">
                 Sign in
               </Button>
             </SignInButton>
@@ -88,6 +94,28 @@ export function Navbar() {
           <ThemeToggle />
         </div>
       </div>
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden w-full bg-white dark:bg-background border-t border-zinc-200/60 px-4 pb-4">
+          <div className="flex flex-col space-y-2 mt-2">
+            <Link href="/" className="text-black dark:text-white font-medium hover:underline transition" onClick={() => setMenuOpen(false)}>Home</Link>
+            <Link href="/kindcollab" className="text-black dark:text-white font-medium hover:underline transition" onClick={() => setMenuOpen(false)}>KindCollab</Link>
+            <Link href="/kindtasks" className="text-black dark:text-white font-medium hover:underline transition" onClick={() => setMenuOpen(false)}>KindTasks</Link>
+            <div className="flex items-center space-x-3 mt-2">
+              {isSignedIn ? (
+                <UserButton afterSignOutUrl="/" />
+              ) : (
+                <SignInButton mode="modal">
+                  <Button className="text-black dark:text-white font-medium hover:underline transition" variant="ghost" size="sm">
+                    Sign in
+                  </Button>
+                </SignInButton>
+              )}
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 } 

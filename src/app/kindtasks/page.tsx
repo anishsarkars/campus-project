@@ -14,6 +14,7 @@ import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 // REMOVE: import { createTask, getTasks } from "@/lib/firebase-utils";
 // REMOVE: import { useAuth } from "@/contexts/auth-context";
 import { geminiChat } from "@/lib/gemini";
+import { useUser, SignInButton } from "@clerk/nextjs";
 
 // Mock data for demonstration
 const initialMockTasks = [
@@ -92,6 +93,7 @@ const PASS_SOUND = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b6c1e7b7.mp
 const FAIL_SOUND = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b6c1e7b7.mp3";
 
 export default function KindTasksPage() {
+  const { isSignedIn, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState("student");
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -309,14 +311,16 @@ export default function KindTasksPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Task Dashboard</h2>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <BookOpen className="h-4 w-4 mr-2" />
-                Create Task
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <div className="fixed left-1/2 bottom-8 z-50 -translate-x-1/2 flex justify-center w-full pointer-events-none">
+              <Button className="pointer-events-auto rounded-full shadow-lg bg-primary text-primary-foreground w-16 h-16 flex items-center justify-center text-3xl" size="icon">
+                <BookOpen className="h-8 w-8" />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            </div>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Task</DialogTitle>
                 <DialogDescription>
@@ -415,7 +419,6 @@ export default function KindTasksPage() {
               {createError && <div className="text-red-500 text-sm mt-2">{createError}</div>}
             </DialogContent>
           </Dialog>
-        </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => (
             <Card key={task.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => {
@@ -626,6 +629,15 @@ export default function KindTasksPage() {
               )}
               {/* Timer and controls */}
               <div className="flex items-center space-x-4 mt-4">
+                {!isSignedIn && isLoaded ? (
+                  <div className="w-full flex flex-col items-center">
+                    <p className="text-sm text-muted-foreground mb-2">Sign in with your college email to submit this task.</p>
+                    <SignInButton mode="modal">
+                      <Button className="w-full max-w-xs" size="sm">Sign in to Submit</Button>
+                    </SignInButton>
+                  </div>
+                ) : (
+                  <>
                 {started && (
                   <div className="flex items-center space-x-2">
                     <span className="font-mono text-lg">{Math.floor(timeLeft/60).toString().padStart(2,"0")}:{(timeLeft%60).toString().padStart(2,"0")}</span>
@@ -644,6 +656,8 @@ export default function KindTasksPage() {
                   <Button onClick={handleSubmitWithTimer}>
                   Submit Task
                 </Button>
+                    )}
+                  </>
                 )}
               </div>
               {/* Pass/Fail Animation */}
