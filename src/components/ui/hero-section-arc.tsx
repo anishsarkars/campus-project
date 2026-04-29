@@ -3,7 +3,7 @@
 import React from "react";
 import { ChevronDown, ChevronRight, TrendingDown, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
-import { SignedOut, SignUpButton } from "@clerk/nextjs";
+import { SignUpButton } from "@clerk/nextjs";
 
 function Gauge({ value, color = "#ef4d23", showLabels = false, min = "", max = "" }: { value: number; color?: string; showLabels?: boolean; min?: string; max?: string }) {
   const activeTicks = Math.round((value / 100) * 40);

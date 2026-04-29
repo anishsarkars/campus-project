@@ -4,7 +4,7 @@ import { Sun, Moon, ChevronRight, Menu } from "lucide-react";
 import React, { useState } from "react";
 import { getStoredNextCoins } from "@/lib/nextcoins";
 import { useTheme } from "next-themes";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 function ThemeToggle() {
@@ -102,16 +102,16 @@ export function Navbar() {
             {coins}
           </div>
           <ThemeToggle />
-          <SignedOut>
+          <Show when="signed-out">
             <SignInButton mode="modal">
               <button className="bg-[#ef4d23] text-white rounded-full px-5 py-1.5 text-[14px] font-medium hover:opacity-90 transition">
                 Sign In
               </button>
             </SignInButton>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          </Show>
         </div>
 
         {/* Mobile Hamburger */}
@@ -142,16 +142,16 @@ export function Navbar() {
                 <span className="text-neutral-500">Coins</span>
                 {coins}
               </div>
-              <SignedOut>
+              <Show when="signed-out">
                 <SignInButton mode="modal">
                   <button className="bg-[#ef4d23] text-white rounded-full px-5 py-1.5 text-[14px] font-medium hover:opacity-90 transition">
                     Sign In
                   </button>
                 </SignInButton>
-              </SignedOut>
-              <SignedIn>
+              </Show>
+              <Show when="signed-in">
                 <UserButton afterSignOutUrl="/" />
-              </SignedIn>
+              </Show>
             </div>
           </div>
         )}
