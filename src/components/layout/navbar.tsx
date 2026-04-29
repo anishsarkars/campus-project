@@ -128,30 +128,34 @@ export function Navbar() {
 
         {/* Mobile Menu Dropdown */}
         {menuOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-lg border border-neutral-200 p-4 z-20 flex flex-col gap-3 font-sans md:hidden">
-            <Link href="/" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Home</Link>
-            <Link href="/skillswap" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>SkillSwap</Link>
-            <Link href="/collab" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Collab</Link>
-            <Link href="/tasks" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Tasks</Link>
-            <Link href="/discovery" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Discovery</Link>
+          <div className="absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-neutral-200 p-5 z-20 flex flex-col gap-4 font-sans md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            <Link href="/" className="text-neutral-800 font-semibold text-[16px] py-1 border-b border-neutral-50" onClick={() => setMenuOpen(false)}>Home</Link>
+            <Link href="/skillswap" className="text-neutral-700 font-medium text-[16px] py-1" onClick={() => setMenuOpen(false)}>SkillSwap</Link>
+            <Link href="/collab" className="text-neutral-700 font-medium text-[16px] py-1" onClick={() => setMenuOpen(false)}>Collab</Link>
+            <Link href="/tasks" className="text-neutral-700 font-medium text-[16px] py-1" onClick={() => setMenuOpen(false)}>Tasks</Link>
+            <Link href="/discovery" className="text-neutral-700 font-medium text-[16px] py-1" onClick={() => setMenuOpen(false)}>Discovery</Link>
             
-            <div className="h-px bg-neutral-100 my-2" />
+            <div className="h-px bg-neutral-100 my-1" />
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-medium text-neutral-800 text-[15px]">
-                <span className="text-neutral-500">Coins</span>
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-2 font-bold text-neutral-900 text-[16px]">
+                <span className="text-neutral-400 font-medium">Coins</span>
                 {coins}
               </div>
-              <Show when="signed-out">
-                <SignInButton mode="modal">
-                  <button className="bg-[#ef4d23] text-white rounded-full px-5 py-1.5 text-[14px] font-medium hover:opacity-90 transition">
-                    Sign In
-                  </button>
-                </SignInButton>
-              </Show>
-              <Show when="signed-in">
-                <UserButton afterSignOutUrl="/" />
-              </Show>
+              <div className="flex items-center gap-3">
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button className="bg-[#ef4d23] text-white rounded-full px-6 py-2.5 text-[15px] font-semibold shadow-md active:scale-95 transition-transform">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                </Show>
+                <Show when="signed-in">
+                  <div className="scale-110">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </Show>
+              </div>
             </div>
           </div>
         )}

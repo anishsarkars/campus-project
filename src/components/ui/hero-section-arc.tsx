@@ -9,8 +9,8 @@ function Gauge({ value, color = "#ef4d23", showLabels = false, min = "", max = "
   const activeTicks = Math.round((value / 100) * 40);
   
   return (
-    <div className="w-full flex flex-col items-center mt-4">
-      <svg viewBox="0 0 200 120" className="w-full max-w-[260px] overflow-visible">
+    <div className="w-full flex flex-col items-center mt-2 sm:mt-4">
+      <svg viewBox="0 0 200 120" className="w-full max-w-[180px] sm:max-w-[260px] overflow-visible">
         {Array.from({ length: 40 }).map((_, i) => {
           // Angle from PI to 2*PI
           const angle = Math.PI + (i / 39) * Math.PI;
@@ -37,7 +37,7 @@ function Gauge({ value, color = "#ef4d23", showLabels = false, min = "", max = "
             />
           );
         })}
-        <text x="100" y="95" textAnchor="middle" fontSize="26" fontWeight="600" fill="#171717">
+        <text x="100" y="95" textAnchor="middle" fontSize="24" sm:fontSize="26" fontWeight="600" fill="#171717">
           {value}%
         </text>
       </svg>
@@ -72,7 +72,7 @@ export function HeroSectionArc() {
       <div className="absolute inset-0 bg-white/10 pointer-events-none" />
 
       {/* Foreground wrapper */}
-      <div className="relative z-10 w-full h-full flex flex-col pt-24 sm:pt-28 overflow-y-auto overflow-x-hidden no-scrollbar">
+      <div className="relative z-10 w-full h-full flex flex-col pt-20 sm:pt-28 overflow-y-auto overflow-x-hidden no-scrollbar">
         
         {/* Hero Content */}
         <div className="flex flex-col items-center px-4 pt-4 sm:pt-8 pb-8 sm:pb-12 text-center shrink-0">
@@ -90,8 +90,8 @@ export function HeroSectionArc() {
           </h1>
 
           <p 
-            className="mt-4 sm:mt-6 text-neutral-700 px-2 max-w-2xl mx-auto"
-            style={{ fontSize: 'clamp(14px, 3.5vw, 17px)' }}
+            className="mt-3 sm:mt-6 text-neutral-700 px-4 max-w-2xl mx-auto"
+            style={{ fontSize: 'clamp(14px, 3vw, 17px)' }}
           >
             NextUP connects students and faculty for peer learning, team-ups, and instant feedback on practical tasks—all in one place.
           </p>
@@ -107,9 +107,9 @@ export function HeroSectionArc() {
         </div>
 
         {/* Dashboard Preview */}
-        <div className="px-3 sm:px-4 pb-12 w-full flex-1 shrink-0">
-          <div className="bg-[#f5f2ee] rounded-3xl p-4 sm:p-6 w-full max-w-[880px] mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="px-3 sm:px-4 pb-8 sm:pb-12 w-full flex-1 shrink-0">
+          <div className="bg-[#f5f2ee] rounded-2xl sm:rounded-3xl p-4 sm:p-6 w-full max-w-[880px] mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               
               {/* Card 1: Skill Swaps */}
               <div className="bg-white rounded-2xl p-5 shadow-sm border border-neutral-100 flex flex-col">
@@ -129,7 +129,7 @@ export function HeroSectionArc() {
                 </div>
                 <div className="text-[12px] text-neutral-500 mt-1.5">Compared to yesterday</div>
                 
-                <div className="mt-6 bg-green-50 text-green-700 text-[12px] font-medium py-1 px-3 rounded-lg text-center mx-auto w-max">
+                <div className="mt-4 sm:mt-6 bg-green-50 text-green-700 text-[11px] sm:text-[12px] font-medium py-1 px-3 rounded-lg text-center mx-auto w-max">
                   Month Target achieved
                 </div>
 
@@ -138,10 +138,10 @@ export function HeroSectionArc() {
                 </div>
 
                 <div className="mt-4 bg-neutral-100 rounded-full p-1 flex items-center w-full">
-                  <div className="flex-1 text-center bg-white shadow-sm rounded-full py-1.5 text-[12px] font-medium text-neutral-800">
+                  <div className="flex-1 text-center bg-white shadow-sm rounded-full py-1 sm:py-1.5 text-[11px] sm:text-[12px] font-medium text-neutral-800">
                     Active Swaps
                   </div>
-                  <div className="flex-1 text-center py-1.5 text-[12px] font-medium text-neutral-500">
+                  <div className="flex-1 text-center py-1 sm:py-1.5 text-[11px] sm:text-[12px] font-medium text-neutral-500">
                     Total Swaps
                   </div>
                 </div>
