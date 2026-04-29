@@ -8,7 +8,7 @@ export function DemoStatus() {
   return (
     <div className="container mx-auto px-8 py-8">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6">KindCampus Demo Status</h2>
+        <h2 className="text-2xl font-bold mb-6">NextUP Demo Status</h2>
         
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
@@ -29,11 +29,11 @@ export function DemoStatus() {
                   <Badge variant="secondary">Complete</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>KindCollab UI</span>
+                  <span>Collab UI</span>
                   <Badge variant="secondary">Complete</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>KindTasks UI</span>
+                  <span>Tasks UI</span>
                   <Badge variant="secondary">Complete</Badge>
                 </div>
                 <div className="flex items-center justify-between">
@@ -100,13 +100,13 @@ export function DemoStatus() {
           <CardContent>
             <CardDescription>
               <p className="mb-4">
-                This is a fully functional demo of KindCampus with mock data. You can:
+                This is a fully functional demo of NextUP with mock data. You can:
               </p>
               <ul className="list-disc list-inside space-y-2 text-sm">
-                <li>Navigate between Home, KindCollab, and KindTasks pages</li>
-                <li>Browse skill-swapping posts in KindCollab</li>
+                <li>Navigate between Home, Collab, and Tasks pages</li>
+                <li>Browse skill-swapping posts in Collab</li>
                 <li>Filter posts by type (Teaching, Learning, Team Up)</li>
-                <li>View task assignments in KindTasks</li>
+                <li>View task assignments in Tasks</li>
                 <li>Switch between Student and Instructor views</li>
                 <li>Interact with the create post/task dialogs</li>
                 <li>See the responsive design across different screen sizes</li>

@@ -1,17 +1,17 @@
-# KindCampus
+# NextUP
 
 A modern web application designed to make campus life easier and more fun through peer skill-swapping and online practical assignments.
 
 ## Features
 
-### 🎯 Peer Skill-Swapping & Team-Up (KindCollab)
+### 🎯 Peer Skill-Swapping & Team-Up (Collab)
 - **Post Skills**: Share what you can teach or what you need help with
 - **Browse & Connect**: Find study buddies and form teams for projects
 - **Instant Meetings**: Get Google Meet links automatically generated
 - **AI Icebreakers**: AI-generated conversation starters for better connections
 - **Smart Matching**: Find perfect matches based on skills and availability
 
-### 📚 Online Practical Assignments (KindTasks)
+### 📚 Online Practical Assignments (Tasks)
 - **Code Challenges**: Write and test code with instant feedback
 - **Design Tasks**: Submit creative work with detailed specifications
 - **Interactive Quizzes**: Multiple-choice questions with immediate grading
@@ -41,7 +41,7 @@ A modern web application designed to make campus life easier and more fun throug
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd kindcampus
+   cd nextup
    ```
 
 2. **Install dependencies**
@@ -81,12 +81,12 @@ npm run dev
 ## Project Structure
 
 ```
-kindcampus/
+nextup/
 ├── src/
 │   ├── app/                    # Next.js app router
 │   │   ├── page.tsx           # Home page
-│   │   ├── kindcollab/        # Peer collaboration module
-│   │   └── kindtasks/         # Online assignments module
+│   │   ├── collab/            # Peer collaboration module
+│   │   └── tasks/             # Online assignments module
 │   ├── components/
 │   │   ├── ui/                # shadcn/ui components
 │   │   │   ├── shuffle-grid.tsx
@@ -247,7 +247,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For support, email support@kindcampus.com or create an issue in this repository.
+For support, email support@nextup.com or create an issue in this repository.
 
 ---
 

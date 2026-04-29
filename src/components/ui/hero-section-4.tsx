@@ -18,11 +18,11 @@ export function HeroSection() {
                         <div className="relative mx-auto flex max-w-6xl flex-col px-6 lg:block">
                             <div className="mx-auto max-w-lg text-center lg:ml-0 lg:w-1/2 lg:text-left">
                                 <h1 className="mt-8 max-w-2xl text-balance text-5xl font-medium md:text-6xl lg:mt-16 xl:text-7xl">Connect, Learn & Grow Together</h1>
-                                <p className="mt-8 max-w-2xl text-pretty text-lg">KindCampus makes peer skill-swapping and practical assignments easier and more fun. Find study buddies, form teams, and complete tasks with instant feedback.</p>
+                                <p className="mt-8 max-w-2xl text-pretty text-lg">NextUP makes peer skill-swapping and practical assignments easier and more fun. Find study buddies, form teams, and complete tasks with instant feedback.</p>
 
                                 <div className="mt-12 flex flex-col items-center justify-center gap-2 sm:flex-row lg:justify-start">
                                     <div className="flex gap-4">
-                                      <Link href="/kindcollab">
+                                      <Link href="/collab">
                                         <HoverBorderGradient
                                           containerClassName="rounded-full"
                                           as="button"
@@ -32,7 +32,7 @@ export function HeroSection() {
                                           <span>Go to Collab</span>
                                         </HoverBorderGradient>
                                       </Link>
-                                      <Link href="/kindtasks">
+                                      <Link href="/tasks">
                                         <HoverBorderGradient
                                           containerClassName="rounded-full"
                                           as="button"
@@ -141,8 +141,8 @@ export function HeroSection() {
 
 const menuItems = [
     { name: 'Home', href: '/' },
-    { name: 'KindCollab', href: '/kindcollab' },
-    { name: 'KindTasks', href: '/kindtasks' },
+    { name: 'Collab', href: '/collab' },
+    { name: 'Tasks', href: '/tasks' },
     { name: 'About', href: '#about' },
 ]
 
@@ -205,14 +205,14 @@ const HeroHeader = () => {
                                     asChild
                                     variant="outline"
                                     size="sm">
-                                    <Link href="/kindcollab">
+                                    <Link href="/collab">
                                         <span>Get Started</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     asChild
                                     size="sm">
-                                    <Link href="/kindtasks">
+                                    <Link href="/tasks">
                                         <span>View Tasks</span>
                                     </Link>
                                 </Button>
@@ -229,9 +229,9 @@ const Logo = ({ className }: { className?: string }) => {
     return (
         <div className={cn('flex items-center space-x-2', className)}>
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">KC</span>
+                <span className="text-white font-bold text-sm">NU</span>
             </div>
-            <span className="text-xl font-bold">KindCampus</span>
+            <span className="text-xl font-bold">NextUP</span>
         </div>
     )
 }

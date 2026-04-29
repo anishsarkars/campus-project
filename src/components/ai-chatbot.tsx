@@ -6,9 +6,9 @@ const SUGGESTED_QA = [
   { q: "How do I start an assignment?", a: "Break the assignment into smaller steps and start with what you know." },
   { q: "How can I prepare for a quiz?", a: "Review your notes, practice sample questions, and get enough rest before the quiz." },
   { q: "What if my code isn't working?", a: "Check for typos, review the requirements, and test with sample inputs." },
-  { q: "How do I join a team?", a: "Go to KindCollab and send a request to join a team or create your own." },
-  { q: "Where can I see deadlines?", a: "All task deadlines are listed in the KindTasks page." },
-  { q: "How do I get feedback?", a: "Submit your work on KindCampus to get instant feedback and hints." },
+  { q: "How do I join a team?", a: "Go to Collab and send a request to join a team or create your own." },
+  { q: "Where can I see deadlines?", a: "All task deadlines are listed in the Tasks page." },
+  { q: "How do I get feedback?", a: "Submit your work on NextUP to get instant feedback and hints." },
 ];
 
 function getDemoAnswer(question: string): string {
@@ -19,7 +19,7 @@ function getDemoAnswer(question: string): string {
   if (q.includes("team") || q.includes("collab")) return "Teamwork is key! Communicate clearly and share responsibilities.";
   if (q.includes("deadline")) return "Check the due date in your task list. Don't wait until the last minute!";
   if (q.includes("ai") || q.includes("gemini")) return "I'm powered by AI to help you with your campus questions!";
-  if (q.includes("feedback")) return "You get instant feedback after submitting your work on KindCampus.";
+  if (q.includes("feedback")) return "You get instant feedback after submitting your work on NextUP.";
   return "I'm here to help with assignments, quizzes, coding, and campus life!";
 }
 

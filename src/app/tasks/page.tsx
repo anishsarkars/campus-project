@@ -92,7 +92,7 @@ const COUNTDOWN_SOUND = "https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b7b
 const PASS_SOUND = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b6c1e7b7.mp3";
 const FAIL_SOUND = "https://cdn.pixabay.com/audio/2022/10/16/audio_12b6c1e7b7.mp3";
 
-export default function KindTasksPage() {
+export default function TasksPage() {
   const { isSignedIn, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState("student");
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -680,12 +680,12 @@ export default function KindTasksPage() {
     );
   };
 
-  const kindTasksIntro = `Assignments, quizzes, and coding challenges.\nStart, solve, and get instant feedback.\nKindTasks makes learning practical.`;
+  const tasksIntro = `Assignments, quizzes, and coding challenges.\nStart, solve, and get instant feedback.\nTasks makes learning practical.`;
 
   return (
     <div className="container mx-auto px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">KindTasks</h1>
+        <h1 className="text-3xl font-bold mb-2">Tasks</h1>
       </div>
 
       {selectedTask ? (
@@ -709,7 +709,7 @@ export default function KindTasksPage() {
       {/* Place the animated intro at the bottom in smaller, lighter text */}
       <div className="mt-12 text-center">
         <span className="text-sm text-muted-foreground">
-          <TextGenerateEffect words={kindTasksIntro} />
+          <TextGenerateEffect words={tasksIntro} />
         </span>
       </div>
       {/* Minimal floating chatbot (slide-up, not modal) */}

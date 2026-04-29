@@ -1,121 +1,161 @@
-"use client"
+"use client";
 
+import { Sun, Moon, ChevronRight, Menu } from "lucide-react";
+import React, { useState } from "react";
+import { getStoredNextCoins } from "@/lib/nextcoins";
+import { useTheme } from "next-themes";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { SignInButton } from "@clerk/nextjs";
-import { Sun, Moon } from "lucide-react";
-import React from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
 
 function ThemeToggle() {
-  const [isDark, setIsDark] = React.useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    const root = window.document.documentElement;
-    const saved = localStorage.getItem("theme");
-    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (saved === "dark" || (!saved && systemDark)) {
-      root.classList.add("dark");
-      setIsDark(true);
-    } else {
-      root.classList.remove("dark");
-      setIsDark(false);
-    }
+    setMounted(true);
   }, []);
 
+  if (!mounted) {
+    return (
+      <button
+        aria-label="Toggle dark mode"
+        className="p-2 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 transition"
+      >
+        <Moon className="w-4 h-4" />
+      </button>
+    );
+  }
+
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
   const toggleTheme = () => {
-    const root = window.document.documentElement;
-    if (root.classList.contains("dark")) {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setIsDark(false);
-    } else {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setIsDark(true);
-    }
+    setTheme(isDark ? "light" : "dark");
   };
 
   return (
     <button
       aria-label="Toggle dark mode"
       onClick={toggleTheme}
-      className="ml-2 p-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+      className="p-2 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 transition"
     >
-      {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
     </button>
   );
 }
 
 export function Navbar() {
-  const { isSignedIn } = useUser();
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [coins, setCoins] = useState(0);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const update = (balance?: number) => {
+      setCoins(balance ?? getStoredNextCoins());
+    };
+    update();
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ balance?: number }>).detail;
+      update(detail?.balance);
+    };
+    window.addEventListener("nextcoins:add" as any, handler);
+    return () => {
+      window.removeEventListener("nextcoins:add" as any, handler);
+    };
+  }, []);
+
   return (
-    <nav className="fixed top-0 left-0 z-50 w-full bg-white/80 dark:bg-background/80 border-b border-zinc-200/60 backdrop-blur-lg">
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-3">
-        {/* Logo and Brand */}
-        <div className="flex items-center space-x-3">
-          <span className="inline-block">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="2" width="12" height="12" fill="#a78bfa"/>
-              <rect x="18" y="2" width="12" height="12" fill="#a78bfa"/>
-              <rect x="2" y="18" width="12" height="12" fill="#a78bfa"/>
-              <rect x="18" y="18" width="12" height="12" fill="#a78bfa"/>
-              <rect x="7" y="7" width="18" height="18" fill="white" fillOpacity="0.1"/>
-            </svg>
-          </span>
-          <span className="text-2xl font-extrabold text-black dark:text-white tracking-tight">KindCampus</span>
+    <div className="absolute top-0 left-0 w-full z-50 flex justify-center pt-4 sm:pt-6 px-3 sm:px-4 pointer-events-none">
+      <nav className="pointer-events-auto bg-white rounded-full shadow-sm border border-neutral-200 pl-4 pr-2 py-2 w-full max-w-[760px] relative flex items-center justify-between font-sans">
+        
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <svg viewBox="0 0 32 32" className="w-7 h-7 sm:w-8 sm:h-8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="3.5" fill="#ef4d23" />
+            <circle cx="16" cy="6" r="3.5" fill="#ef4d23" />
+            <circle cx="23" cy="9" r="3.5" fill="#ef4d23" />
+            <circle cx="26" cy="16" r="3.5" fill="#ef4d23" />
+            <circle cx="23" cy="23" r="3.5" fill="#ef4d23" />
+            <circle cx="16" cy="26" r="3.5" fill="#ef4d23" />
+            <circle cx="9" cy="23" r="3.5" fill="#ef4d23" />
+            <circle cx="6" cy="16" r="3.5" fill="#ef4d23" />
+            <circle cx="9" cy="9" r="3.5" fill="#ef4d23" />
+          </svg>
+          <span className="font-semibold text-neutral-900 text-[15px] tracking-tight hidden sm:block">NextUP</span>
+        </Link>
+
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-6 text-[14px] text-neutral-700 font-medium">
+          <Link href="/" className="flex items-center gap-1.5 hover:text-black transition">
+            <div className="w-[1.5px] h-[1.5px] bg-black rounded-full" />
+            Home
+          </Link>
+          <Link href="/skillswap" className="hover:text-black transition">SkillSwap</Link>
+          <Link href="/collab" className="hover:text-black transition">Collab</Link>
+          <Link href="/tasks" className="hover:text-black transition">Tasks</Link>
+          <Link href="/discovery" className="hover:text-black transition">Discovery</Link>
         </div>
-        {/* Hamburger for mobile */}
-        <button className="md:hidden ml-auto p-2" aria-label="Open menu" onClick={() => setMenuOpen(!menuOpen)}>
-          <span className="block w-6 h-0.5 bg-black dark:bg-white mb-1"></span>
-          <span className="block w-6 h-0.5 bg-black dark:bg-white mb-1"></span>
-          <span className="block w-6 h-0.5 bg-black dark:bg-white"></span>
-        </button>
-        {/* Center Menu */}
-        <div className="hidden md:flex flex-1 justify-center">
-          <div className="flex space-x-10">
-            <Link href="/" className="text-black dark:text-white font-medium hover:underline transition">Home</Link>
-            <Link href="/kindcollab" className="text-black dark:text-white font-medium hover:underline transition">KindCollab</Link>
-            <Link href="/kindtasks" className="text-black dark:text-white font-medium hover:underline transition">KindTasks</Link>
+
+        {/* Right Cluster */}
+        <div className="hidden md:flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-medium text-neutral-800">
+            <span className="text-xs text-neutral-500">Coins</span>
+            {coins}
           </div>
-        </div>
-        {/* Right Side Buttons */}
-        <div className="hidden md:flex items-center space-x-3">
-          {isSignedIn ? (
-            <UserButton afterSignOutUrl="/" />
-          ) : (
-            <SignInButton mode="modal">
-              <Button className="text-black dark:text-white font-medium hover:underline transition" variant="ghost" size="sm">
-                Sign in
-              </Button>
-            </SignInButton>
-          )}
           <ThemeToggle />
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="bg-[#ef4d23] text-white rounded-full px-5 py-1.5 text-[14px] font-medium hover:opacity-90 transition">
+                Sign In
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
         </div>
-      </div>
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden w-full bg-white dark:bg-background border-t border-zinc-200/60 px-4 pb-4">
-          <div className="flex flex-col space-y-2 mt-2">
-            <Link href="/" className="text-black dark:text-white font-medium hover:underline transition" onClick={() => setMenuOpen(false)}>Home</Link>
-            <Link href="/kindcollab" className="text-black dark:text-white font-medium hover:underline transition" onClick={() => setMenuOpen(false)}>KindCollab</Link>
-            <Link href="/kindtasks" className="text-black dark:text-white font-medium hover:underline transition" onClick={() => setMenuOpen(false)}>KindTasks</Link>
-            <div className="flex items-center space-x-3 mt-2">
-              {isSignedIn ? (
-                <UserButton afterSignOutUrl="/" />
-              ) : (
+
+        {/* Mobile Hamburger */}
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle />
+          <button 
+            className="p-2 text-neutral-700" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        {menuOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-lg border border-neutral-200 p-4 z-20 flex flex-col gap-3 font-sans md:hidden">
+            <Link href="/" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Home</Link>
+            <Link href="/skillswap" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>SkillSwap</Link>
+            <Link href="/collab" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Collab</Link>
+            <Link href="/tasks" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Tasks</Link>
+            <Link href="/discovery" className="text-neutral-700 font-medium text-[15px]" onClick={() => setMenuOpen(false)}>Discovery</Link>
+            
+            <div className="h-px bg-neutral-100 my-2" />
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-medium text-neutral-800 text-[15px]">
+                <span className="text-neutral-500">Coins</span>
+                {coins}
+              </div>
+              <SignedOut>
                 <SignInButton mode="modal">
-                  <Button className="text-black dark:text-white font-medium hover:underline transition" variant="ghost" size="sm">
-                    Sign in
-                  </Button>
+                  <button className="bg-[#ef4d23] text-white rounded-full px-5 py-1.5 text-[14px] font-medium hover:opacity-90 transition">
+                    Sign In
+                  </button>
                 </SignInButton>
-              )}
-              <ThemeToggle />
+              </SignedOut>
+              <SignedIn>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
             </div>
           </div>
-        </div>
-      )}
-    </nav>
+        )}
+      </nav>
+    </div>
   );
-} 
+}

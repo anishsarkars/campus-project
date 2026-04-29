@@ -17,9 +17,10 @@ import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 // Mock data for demonstration
 const COLLAB_TYPES = [
+  { value: "project_partner", label: "Project Partner" },
+  { value: "study_buddy", label: "Study Buddy" },
+  { value: "startup_cofounder", label: "Startup Co-founder" },
   { value: "skill_swap", label: "Skill Swap" },
-  { value: "team_up", label: "Team Up" },
-  { value: "idea_partner", label: "Idea/Partner" },
 ];
 
 // 2. Update mockCards to use new types and structure
@@ -28,10 +29,10 @@ const mockCards = [
     id: "1",
     posterId: "user1",
     posterName: "Sarah Chen",
-    type: "skill_swap" as const,
-    title: "I can teach React, want to learn Figma",
-    description: "I can help you get started with React. Looking to learn Figma basics.",
-    tags: ["React", "Figma", "Web Dev"],
+    type: "project_partner" as const,
+    title: "Looking for a final-year project partner",
+    description: "Building an AI study assistant for our capstone. Need someone strong with UI and presentation decks.",
+    tags: ["AI", "Capstone", "UI"],
     timeSlots: ["Monday 2-4pm", "Friday 10-12am"],
     contactNumber: "123-456-7890",
     timestamp: new Date(),
@@ -41,10 +42,10 @@ const mockCards = [
     id: "2",
     posterId: "user2",
     posterName: "Alex Rodriguez",
-    type: "team_up" as const,
-    title: "Need teammates for hackathon",
-    description: "Looking for 2 teammates for the upcoming campus hackathon. Need frontend and backend developers.",
-    tags: ["Hackathon", "Programming", "Team"],
+    type: "study_buddy" as const,
+    title: "Study buddy for Calculus II",
+    description: "Would love to meet twice a week to review integrals + practice sheets. Coffee-driven sessions welcome.",
+    tags: ["Calculus", "Study Session"],
     timeSlots: ["Friday 6-8pm", "Saturday 9am-5pm"],
     contactNumber: "234-567-8901",
     timestamp: new Date(),
@@ -54,10 +55,10 @@ const mockCards = [
     id: "3",
     posterId: "user3",
     posterName: "Emma Wilson",
-    type: "idea_partner" as const,
-    title: "Looking for a study partner",
-    description: "Need a partner for regular calculus study sessions.",
-    tags: ["Math", "Calculus", "Study"],
+    type: "startup_cofounder" as const,
+    title: "Looking for a co-founder (design + ops)",
+    description: "Campus classifieds startup seeking someone who can shape product flows and ops with me.",
+    tags: ["Startup", "Design", "Operations"],
     timeSlots: ["Tuesday 3-5pm", "Thursday 1-3pm"],
     contactNumber: "345-678-9012",
     timestamp: new Date(),
@@ -65,7 +66,7 @@ const mockCards = [
   }
 ];
 
-export default function KindCollabPage() {
+export default function CollabPage() {
   const { user, isSignedIn, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -138,12 +139,12 @@ export default function KindCollabPage() {
         title: form.teach && form.learn ? `I can teach ${form.teach}, want to learn ${form.learn}` : form.title,
         description: form.description || `Teach: ${form.teach}, Learn: ${form.learn}`
       };
-    } else if (form.type === "team_up") {
+    } else if (form.type === "project_partner") {
       newCard = {
         ...newCard,
         description: form.teamDetails || form.description
       };
-    } else if (form.type === "idea_partner") {
+    } else if (form.type === "startup_cofounder") {
       newCard = {
         ...newCard,
         description: form.ideaDetails || form.description
@@ -185,12 +186,14 @@ export default function KindCollabPage() {
   // 3. Update getTypeIcon and getTypeLabel
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "skill_swap":
-        return <Star className="h-4 w-4 text-green-500" />;
-      case "team_up":
+      case "project_partner":
         return <Users className="h-4 w-4 text-purple-500" />;
-      case "idea_partner":
-        return <MessageSquare className="h-4 w-4 text-blue-500" />;
+      case "study_buddy":
+        return <MapPin className="h-4 w-4 text-blue-500" />;
+      case "startup_cofounder":
+        return <Star className="h-4 w-4 text-amber-500" />;
+      case "skill_swap":
+        return <MessageSquare className="h-4 w-4 text-green-500" />;
       default:
         return <MessageSquare className="h-4 w-4" />;
     }
@@ -198,12 +201,14 @@ export default function KindCollabPage() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
+      case "project_partner":
+        return "Project Partner";
+      case "study_buddy":
+        return "Study Buddy";
+      case "startup_cofounder":
+        return "Startup Co-founder";
       case "skill_swap":
         return "Skill Swap";
-      case "team_up":
-        return "Team Up";
-      case "idea_partner":
-        return "Idea/Partner";
       default:
         return type;
     }
@@ -278,7 +283,7 @@ export default function KindCollabPage() {
   // Joiner: show approved matches for this user
   const approvedMatches = isSignedIn && user ? joinRequests.filter(r => r.joinerId === user.id && r.status === 'approved') : [];
 
-  const kindCollabIntro = `Skill Swap, Team Up, or Find a Partner.\nCreate a card, get requests, connect instantly.\nKindCollab makes campus collaboration easy.`;
+  const collabIntro = `Find a project partner, study buddy, startup co-founder, or quick skill swap.\nCreate a card, get instant requests, and keep momentum alive.`;
 
   return (
     <div className="min-h-screen bg-background py-10 px-2 md:px-8 transition-colors flex flex-col min-h-screen">
@@ -563,7 +568,7 @@ export default function KindCollabPage() {
       {/* Place intro at the bottom, extra tiny, wider, and lighter */}
       <div className="mt-auto max-w-2xl mx-auto text-center pb-1">
         <span className="text-[8px] text-muted-foreground/50 font-mono">
-          <TextGenerateEffect words={kindCollabIntro} />
+          <TextGenerateEffect words={collabIntro} />
         </span>
       </div>
     </div>
