@@ -1,365 +1,404 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Star, Search, Clock, ExternalLink, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Repeat2, Plus, Search, Coins, Check, Star, ArrowRightLeft, Users, Clock } from "lucide-react";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { useAuth } from "@/contexts/auth-context";
+import * as skillswapApi from "@/lib/api/skillswap";
 import { toast } from "sonner";
-import { addNextCoins } from "@/lib/nextcoins";
+import type { Skillswap, StudentProfile, ApiError } from "@/types";
 
-type SkillSwapCard = {
-  id: string;
-  posterName: string;
-  teach: string;
-  learn: string;
-  description: string;
-  tags: string[];
-  timeSlots: string[];
-  createdAt: string;
+const statusColors: Record<string, string> = {
+  open: "bg-green-500/10 text-green-600 border-green-200",
+  accepted: "bg-blue-500/10 text-blue-600 border-blue-200",
+  completed: "bg-neutral-500/10 text-neutral-600 border-neutral-200",
 };
 
-const demoCards: SkillSwapCard[] = [
+const dummySwaps: Skillswap[] = [
   {
-    id: "1",
-    posterName: "Sarah Chen",
-    teach: "React",
-    learn: "Figma",
-    description: "Happy to walk you through React fundamentals. I’d love to learn Figma basics in exchange.",
-    tags: ["React", "Figma", "Web Dev"],
-    timeSlots: ["Mon 2-4pm", "Fri 10-12am"],
-    createdAt: new Date().toISOString(),
+    _id: "dummy-s1",
+    mode: "skill",
+    skillName: "Advanced React Patterns",
+    description: "I can teach you advanced React (hooks, context, performance). I want to learn basic Python for data science.",
+    skillOffered: "React.js",
+    skillRequested: "Python",
+    status: "open",
+    createdBy: { id: { email: "charlie@university.edu" } as any, role: "Student" },
   },
   {
-    id: "2",
-    posterName: "Alex Rodriguez",
-    teach: "Python",
-    learn: "Video Editing",
-    description: "Can help with beginner to intermediate Python. Looking for someone to show me how to edit videos for YouTube.",
-    tags: ["Python", "Editing"],
-    timeSlots: ["Sat 3-5pm"],
-    createdAt: new Date().toISOString(),
-  },
+    _id: "dummy-s2",
+    mode: "coin",
+    skillName: "Figma UI/UX Crash Course",
+    description: "I will teach you how to design a modern mobile app in Figma from scratch in 2 hours.",
+    coinCost: 150,
+    status: "open",
+    createdBy: { id: { email: "diana@university.edu" } as any, role: "Student" },
+  }
 ];
 
-export default function SkillSwapPage() {
-  const [cards, setCards] = useState<SkillSwapCard[]>(demoCards);
-  const [search, setSearch] = useState("");
-  const [joinState, setJoinState] = useState<
-    Record<
-      string,
-      {
-        status: "idle" | "loading" | "approved" | "rejected";
-        meetLink?: string;
-      }
-    >
-  >({});
-  const [form, setForm] = useState({
-    name: "",
-    teach: "",
-    learn: "",
-    description: "",
-    tags: "",
-    timeSlot: "",
+export default function SkillswapPage() {
+  const router = useRouter();
+  const { isAuthenticated, isStudent, profile } = useAuth();
+  const [skillswaps, setSkillswaps] = useState<Skillswap[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterMode, setFilterMode] = useState<string>("all");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  // Create form
+  const [formMode, setFormMode] = useState<"coin" | "skill">("skill");
+  const [formSkillName, setFormSkillName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
+  const [formCoinCost, setFormCoinCost] = useState("");
+  const [formSkillOffered, setFormSkillOffered] = useState("");
+  const [formSkillRequested, setFormSkillRequested] = useState("");
+
+  // Complete dialog
+  const [completeId, setCompleteId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState("");
+  const [rating, setRating] = useState(5);
+
+  const fetchSwaps = useCallback(async () => {
+    try {
+      const data = await skillswapApi.getAll();
+      const realData = data.skillswaps || data as any || [];
+      setSkillswaps([...realData, ...dummySwaps]);
+    } catch { setSkillswaps(dummySwaps); } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchSwaps(); }, [fetchSwaps]);
+
+  const filtered = skillswaps.filter((s) => {
+    const matchSearch = s.skillName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchMode = filterMode === "all" || s.mode === filterMode;
+    return matchSearch && matchMode;
   });
 
-  const filteredCards = cards.filter((card) => {
-    const q = search.toLowerCase();
-    if (!q) return true;
-    return (
-      card.teach.toLowerCase().includes(q) ||
-      card.learn.toLowerCase().includes(q) ||
-      card.tags.join(",").toLowerCase().includes(q) ||
-      card.description.toLowerCase().includes(q)
-    );
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { id, value } = e.target;
-    setForm((prev) => ({ ...prev, [id]: value }));
+  const handleCreate = async () => {
+    if (!formSkillName.trim()) { toast.error("Skill name is required"); return; }
+    setCreating(true);
+    try {
+      await skillswapApi.create({
+        mode: formMode,
+        skillName: formSkillName,
+        description: formDesc,
+        coinCost: formMode === "coin" ? parseInt(formCoinCost) || 0 : undefined,
+        skillOffered: formMode === "skill" ? formSkillOffered : undefined,
+        skillRequested: formMode === "skill" ? formSkillRequested : undefined,
+      });
+      toast.success("Skillswap request created!");
+      setCreateOpen(false);
+      setFormSkillName(""); setFormDesc(""); setFormCoinCost(""); setFormSkillOffered(""); setFormSkillRequested("");
+      fetchSwaps();
+    } catch (err) {
+      toast.error((err as ApiError).message || "Failed to create");
+    } finally { setCreating(false); }
   };
 
-  const generateMeetLink = () => {
-    const slug = Math.random().toString(36).slice(2, 5);
-    const slug2 = Math.random().toString(36).slice(2, 6);
-    return `https://meet.google.com/${slug}-${slug2}`;
+  const handleAccept = async (id: string) => {
+    try {
+      await skillswapApi.accept(id);
+      toast.success("Skillswap accepted!");
+      fetchSwaps();
+    } catch (err) {
+      toast.error((err as ApiError).message || "Failed to accept");
+    }
   };
 
-  const handleCreate = () => {
-    if (!form.teach.trim() || !form.learn.trim()) return;
-    const newCard: SkillSwapCard = {
-      id: (Math.random() * 100000).toFixed(0),
-      posterName: form.name.trim() || "Guest",
-      teach: form.teach.trim(),
-      learn: form.learn.trim(),
-      description:
-        form.description.trim() ||
-        `I can teach ${form.teach.trim()} and want to learn ${form.learn.trim()}.`,
-      tags: form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-      timeSlots: form.timeSlot ? [form.timeSlot] : [],
-      createdAt: new Date().toISOString(),
-    };
-    setCards((prev) => [newCard, ...prev]);
-    addNextCoins(5);
-    setForm({
-      name: "",
-      teach: "",
-      learn: "",
-      description: "",
-      tags: "",
-      timeSlot: "",
-    });
+  const handleComplete = async () => {
+    if (!completeId) return;
+    try {
+      await skillswapApi.complete(completeId, { feedback, rating });
+      toast.success("Skillswap marked as completed!");
+      setCompleteId(null);
+      setFeedback(""); setRating(5);
+      fetchSwaps();
+    } catch (err) {
+      toast.error((err as ApiError).message || "Failed to complete");
+    }
   };
 
-  const handleJoin = (cardId: string) => {
-    if (joinState[cardId]?.status === "loading") return;
-    setJoinState((prev) => ({
-      ...prev,
-      [cardId]: {
-        status: "loading",
-      },
-    }));
-    addNextCoins(1);
-    setTimeout(() => {
-      const approved = Math.random() > 0.4;
-      setJoinState((prev) => ({
-        ...prev,
-        [cardId]: {
-          status: approved ? "approved" : "rejected",
-          meetLink: approved ? generateMeetLink() : undefined,
-        },
-      }));
-      if (approved) {
-        addNextCoins(4);
-        toast.success("Request approved! Meet link unlocked.");
-      } else {
-        toast.error("Request not accepted this time.");
-      }
-    }, 1500);
-  };
+  const myId = profile?._id;
+  const skillswapIntro = `Exchange skills with peers or use NextCoins.\nLearn something new by teaching what you know.\nSkillSwap makes peer learning real.`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-16 px-4 md:px-6">
-      <div className="max-w-4xl mx-auto space-y-10">
-        {/* Header */}
-        <header className="space-y-4 text-center md:text-left">
-          <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground flex items-center justify-center md:justify-start gap-2">
-            <Star className="w-4 h-4 text-amber-500" />
-            SkillSwap
-          </p>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-            Trade skills and learn together.
-          </h1>
-          <p className="text-base text-muted-foreground">
-            Post what you can teach, what you’re chasing next, and connect—no sign-in, no barriers. Every action quietly tops up your NextCoins stash.
-          </p>
-          <p className="text-xs uppercase tracking-widest text-emerald-500">
-            +5 NextCoins for each post · +1/+4 for join attempts/approvals
-          </p>
-        </header>
-
-        {/* Search bar */}
-        <div className="flex items-center gap-3 rounded-2xl border border-border bg-secondary/50 px-4 py-2 shadow-sm">
-          <Search className="w-5 h-5 text-muted-foreground" />
-          <Input
-            id="search"
-            placeholder="Search by skill, tag, or description…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border-0 bg-transparent text-sm placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 pt-16">
+        <div className="mb-12 relative">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#6b7280]">
+              <Star className="h-4 w-4 text-[#ef4d23]" /> SKILLSWAP
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight">
+              Trade skills and learn together.
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed">
+              Post what you can teach, what you&apos;re chasing next, and connect—no sign-in, no barriers. 
+              Every action quietly tops up your NextCoins stash.
+            </p>
+            <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-emerald-500 uppercase mt-2">
+              <span>+5 NEXTCOINS FOR EACH POST</span>
+              <span className="text-border">·</span>
+              <span>+1/+4 FOR JOIN ATTEMPTS/APPROVALS</span>
+            </div>
+          </div>
         </div>
 
-        {/* Create card */}
-        <Card className="rounded-3xl border-border bg-card shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="w-5 h-5 text-muted-foreground" />
-              Post a new Skill Swap
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">No log-in, no fuss. Just add the essentials and hit publish.</p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1 md:col-span-1">
-                <label htmlFor="name" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Your name (optional)
-                </label>
-                <Input
-                  id="name"
-                  placeholder="e.g., Maya"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="text-sm bg-secondary/50 focus-visible:ring-ring"
-                />
-              </div>
-              <div className="space-y-1 md:col-span-1">
-                <label htmlFor="teach" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  What you can teach
-                </label>
-                <Input
-                  id="teach"
-                  placeholder="React, calculus, video editing..."
-                  value={form.teach}
-                  onChange={handleChange}
-                  className="text-sm bg-secondary/50 focus-visible:ring-ring"
-                />
-              </div>
-              <div className="space-y-1 md:col-span-1">
-                <label htmlFor="learn" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  What you want to learn
-                </label>
-                <Input
-                  id="learn"
-                  placeholder="Figma, DS, public speaking..."
-                  value={form.learn}
-                  onChange={handleChange}
-                  className="text-sm bg-secondary/50 focus-visible:ring-ring"
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="description" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Short description
-              </label>
-              <Textarea
-                id="description"
-                placeholder="Add a simple trade, vibe, or context..."
-                value={form.description}
-                onChange={handleChange}
-                rows={3}
-                className="text-sm bg-secondary/50 focus-visible:ring-ring"
+      {/* Search Bar */}
+      <div className="relative max-w-4xl mb-12 group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400 group-focus-within:text-primary transition-colors" />
+        <Input 
+          placeholder="Search by skill, tag, or description..." 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+          className="pl-12 py-7 rounded-2xl border-border bg-card shadow-sm focus-visible:ring-offset-0 focus-visible:ring-1 text-base"
+        />
+      </div>
+
+      {/* Inline Creation Form */}
+      <Card className="rounded-3xl border-border shadow-sm bg-card mb-16 overflow-hidden">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-lg font-bold text-foreground">Post a new Skill Swap</CardTitle>
+          </div>
+          <CardDescription className="text-sm text-neutral-500">
+            No log-in, no fuss. Just add the essentials and hit publish.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">TITLE / NAME</Label>
+              <Input 
+                value={formSkillName} 
+                onChange={(e) => setFormSkillName(e.target.value)} 
+                placeholder="e.g., Maya" 
+                className="bg-card border-border focus-visible:ring-1 focus-visible:ring-ring rounded-lg shadow-sm"
               />
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-1">
-                <label htmlFor="tags" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Tags (comma separated)
-                </label>
-                <Input
-                  id="tags"
-                  placeholder="React, Figma, Design, CS Club"
-                  value={form.tags}
-                  onChange={handleChange}
-                  className="text-sm bg-secondary/50 focus-visible:ring-ring"
-                />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="timeSlot" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Preferred time
-                </label>
-                <Input
-                  id="timeSlot"
-                  placeholder="e.g., Weekdays after 6pm"
-                  value={form.timeSlot}
-                  onChange={handleChange}
-                  className="text-sm bg-secondary/50 focus-visible:ring-ring"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">WHAT YOU CAN TEACH</Label>
+              <Input 
+                value={formSkillOffered} 
+                onChange={(e) => setFormSkillOffered(e.target.value)} 
+                placeholder="React, calculus, video editing..." 
+                className="bg-card border-border focus-visible:ring-1 focus-visible:ring-ring rounded-lg shadow-sm"
+              />
             </div>
-            <div className="flex justify-end">
-              <Button
-                onClick={handleCreate}
-                disabled={!form.teach.trim() || !form.learn.trim()}
-                variant="default"
-                className="rounded-full px-6"
-              >
-                Publish
-              </Button>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">WHAT YOU WANT TO LEARN</Label>
+              <Input 
+                value={formSkillRequested} 
+                onChange={(e) => setFormSkillRequested(e.target.value)} 
+                placeholder="Figma, DS, public speaking..." 
+                className="bg-card border-border focus-visible:ring-1 focus-visible:ring-ring rounded-lg shadow-sm"
+              />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Cards grid */}
-        <div className="grid gap-5 md:grid-cols-2">
-          {filteredCards.length === 0 ? (
-            <div className="col-span-full text-center text-muted-foreground py-10 text-sm">
-              No skill swaps found yet. Try changing your search or create the first post!
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">SHORT DESCRIPTION</Label>
+            <Textarea 
+              value={formDesc} 
+              onChange={(e) => setFormDesc(e.target.value)} 
+              placeholder="Add a simple trade, vibe, or context..." 
+              className="bg-card border-border focus-visible:ring-1 focus-visible:ring-ring min-h-[80px] rounded-lg resize-none shadow-sm"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-end justify-between gap-4 pt-2">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="space-y-1.5 w-1/2 sm:w-auto">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">MODE</Label>
+                <div className="flex p-0.5 bg-muted rounded-lg border border-border">
+                  <button 
+                    onClick={() => setFormMode("skill")}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${formMode === "skill" ? "bg-card text-foreground shadow-sm border border-border/50" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Skill Swap
+                  </button>
+                  <button 
+                    onClick={() => setFormMode("coin")}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${formMode === "coin" ? "bg-card text-foreground shadow-sm border border-border/50" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Coin
+                  </button>
+                </div>
+              </div>
+              {formMode === "coin" && (
+                <div className="space-y-1.5 w-1/2 sm:w-auto">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">NEXTCOINS</Label>
+                  <Input 
+                    type="number" 
+                    value={formCoinCost} 
+                    onChange={(e) => setFormCoinCost(e.target.value)} 
+                    placeholder="e.g., 50" 
+                    className="w-full sm:w-24 bg-card border-border focus-visible:ring-1 focus-visible:ring-ring rounded-lg shadow-sm"
+                  />
+                </div>
+              )}
             </div>
-          ) : (
-            filteredCards.map((card) => (
-              <Card
-                key={card.id}
-                className="rounded-2xl border-border bg-card shadow-sm transition hover:border-muted-foreground/50 hover:shadow-md"
-              >
-                <CardHeader className="space-y-2">
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    {new Date(card.createdAt).toLocaleDateString()}
-                  </p>
-                  <CardTitle className="text-base font-semibold">
-                    {card.posterName} wants to learn <span className="text-muted-foreground">{card.learn}</span> & teach{" "}
-                    <span className="text-muted-foreground">{card.teach}</span>
-                  </CardTitle>
+
+            <Button 
+              onClick={handleCreate} 
+              disabled={creating} 
+              className="w-full sm:w-auto px-8 py-2 h-auto rounded-full bg-primary text-primary-foreground text-sm font-medium transition-colors border-0"
+            >
+              {creating ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" /> : null}
+              Publish
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results Header & Filters */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <h2 className="text-xl font-bold text-foreground">Browse Swaps</h2>
+        <div className="flex p-1 bg-muted rounded-xl">
+          {["all", "skill", "coin"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-6 py-2 rounded-lg text-xs font-bold capitalize transition-all ${filterMode === mode ? "bg-card text-primary shadow-sm" : "text-muted-foreground"}`}
+            >
+              {mode === "all" ? "All" : mode === "skill" ? "Skill Swap" : "Coin"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Results */}
+      {loading ? (
+        <div className="flex justify-center py-16"><div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" /></div>
+      ) : filtered.length === 0 ? (
+        <Card className="rounded-2xl bg-card"><CardContent className="py-12 text-center">
+          <Repeat2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">No skillswap requests found. Create one!</p>
+        </CardContent></Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+          {filtered.map((swap) => {
+            const isOwner = myId && swap.createdBy?.id && (typeof swap.createdBy.id === "object" ? (swap.createdBy.id as any)._id === myId : swap.createdBy.id === myId);
+            const canAccept = isAuthenticated && isStudent && !isOwner && swap.status === "open";
+            const creator = typeof swap.createdBy?.id === "object" ? swap.createdBy.id : null;
+            const creatorEmail = creator && "email" in creator ? (creator as any).email : "Anonymous";
+            const isAccepter = (typeof swap.acceptedBy === "string" && swap.acceptedBy === myId) ||
+              (typeof swap.acceptedBy === "object" && swap.acceptedBy && (swap.acceptedBy as any)?._id === myId);
+            const isParticipant = isOwner || isAccepter;
+
+            return (
+              <Card key={swap._id} className="rounded-2xl border border-border shadow-sm bg-card hover:shadow-md transition-all flex flex-col h-full overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <Badge className={`${statusColors[swap.status]} rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border-0 shadow-sm`}>
+                      {swap.status}
+                    </Badge>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {new Date(swap.createdAt!).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <CardTitle className="text-lg leading-tight">{swap.skillName}</CardTitle>
+                  <CardDescription className="line-clamp-2">{swap.description}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm">{card.description}</p>
-                  {card.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {card.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs font-normal">
-                          {tag}
-                        </Badge>
-                      ))}
+
+                <CardContent className="space-y-3 flex-grow flex flex-col">
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <div className="bg-muted/50 p-3 rounded-xl border border-border/50">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Mode</p>
+                      <p className="text-xs font-bold text-foreground capitalize flex items-center gap-1.5">
+                        {swap.mode === "coin" ? <Coins className="w-3.5 h-3.5 text-amber-500" /> : <ArrowRightLeft className="w-3.5 h-3.5 text-blue-500" />}
+                        {swap.mode}
+                      </p>
+                    </div>
+                    <div className="bg-muted/50 p-3 rounded-xl border border-border/50">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{swap.mode === "coin" ? "Cost" : "Offered"}</p>
+                      <p className="text-xs font-bold text-foreground line-clamp-1">
+                        {swap.mode === "coin" ? `${swap.coinCost} Coins` : swap.skillOffered}
+                      </p>
+                    </div>
+                  </div>
+
+                  {swap.mode === "skill" && (
+                    <div className="space-y-1">
+                      {swap.skillOffered && <div className="text-[11px]"><span className="text-muted-foreground">Offering:</span> <Badge variant="outline" className="text-[9px] ml-1">{swap.skillOffered}</Badge></div>}
+                      {swap.skillRequested && <div className="text-[11px]"><span className="text-muted-foreground">Requesting:</span> <Badge variant="outline" className="text-[9px] ml-1">{swap.skillRequested}</Badge></div>}
                     </div>
                   )}
-                  {card.timeSlots.length > 0 && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>{card.timeSlots.join(", ")}</span>
+
+                  <div className="mt-auto pt-4 border-t border-border flex flex-col gap-3 w-full">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                        <Users className="w-3 h-3 text-muted-foreground" />
+                      </div>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {creatorEmail.split('@')[0]}
+                      </span>
                     </div>
-                  )}
-                  <div className="pt-4 border-t border-border space-y-2">
-                    <Button
-                      className="w-full rounded-full"
-                      variant="outline"
-                      disabled={joinState[card.id]?.status === "loading"}
-                      onClick={() => handleJoin(card.id)}
-                    >
-                      {joinState[card.id]?.status === "loading"
-                        ? "Checking availability..."
-                        : joinState[card.id]?.status === "approved"
-                        ? "Request again"
-                        : "Request to join"}
-                    </Button>
-                    {joinState[card.id]?.status === "approved" && joinState[card.id]?.meetLink && (
-                      <div className="rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-3 text-sm space-y-2 text-emerald-700 dark:text-emerald-200">
-                        <div className="font-semibold">Approved • Meet link unlocked</div>
-                        <a
-                          href={joinState[card.id].meetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 underline underline-offset-4"
-                        >
-                          {joinState[card.id].meetLink}
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                        <p className="text-xs opacity-80">
-                          Share carefully. A new link is generated when you request again.
-                        </p>
-                      </div>
-                    )}
-                    {joinState[card.id]?.status === "rejected" && (
-                      <div className="rounded-xl border border-amber-400/40 bg-amber-400/10 p-3 text-sm flex items-start gap-2 text-amber-700 dark:text-amber-200">
-                        <AlertCircle className="w-4 h-4 mt-0.5" />
-                        <span>Not accepted this time—try another swap or post your own.</span>
-                      </div>
-                    )}
+
+                    <div className="flex gap-2 w-full">
+                      {canAccept && (
+                        <Button size="sm" onClick={() => handleAccept(swap._id)} className="w-full bg-primary text-primary-foreground rounded-lg text-xs font-bold">
+                          Accept Swap
+                        </Button>
+                      )}
+                      {isParticipant && swap.status === "accepted" && (
+                        <Button size="sm" onClick={() => setCompleteId(swap._id)} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold">
+                          Complete
+                        </Button>
+                      )}
+                      {isOwner && swap.status === "open" && <Badge className="w-full justify-center rounded-lg py-1.5" variant="secondary">Your Request</Badge>}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
+            );
+          })}
         </div>
+      )}
+
+      {/* Complete Dialog */}
+      <Dialog open={!!completeId} onOpenChange={(open) => !open && setCompleteId(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Complete Skillswap</DialogTitle>
+            <DialogDescription>Leave feedback and rate your experience</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Rating</Label>
+              <div className="flex gap-1 mt-1">
+                {[1,2,3,4,5].map((r) => (
+                  <button key={r} onClick={() => setRating(r)} className="p-1">
+                    <Star className={`w-6 h-6 ${r <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Feedback</Label>
+              <Textarea value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="How was the experience?" className="mt-1" />
+            </div>
+            <Button onClick={handleComplete} className="w-full rounded-xl">
+              Submit & Complete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="mt-12 text-center">
+        <span className="text-sm text-muted-foreground"><TextGenerateEffect words={skillswapIntro} /></span>
       </div>
-    </div>
+    </div></div>
   );
 }
-
-
