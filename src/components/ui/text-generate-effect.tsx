@@ -6,10 +6,17 @@ export function TextGenerateEffect({ words }: { words: string }) {
   useEffect(() => {
     let i = 0;
     setDisplayed("");
+    if (!words) return;
     const interval = setInterval(() => {
-      setDisplayed((prev) => prev + words[i]);
-      i++;
-      if (i >= words.length) clearInterval(interval);
+      if (words && i < words.length) {
+        const char = words[i];
+        if (char !== undefined) {
+          setDisplayed((prev) => prev + char);
+        }
+        i++;
+      } else {
+        clearInterval(interval);
+      }
     }, 18);
     return () => clearInterval(interval);
   }, [words]);
